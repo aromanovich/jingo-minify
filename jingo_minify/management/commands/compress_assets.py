@@ -10,8 +10,8 @@ from django.core.management.base import BaseCommand
 
 import git
 
-
-path = lambda *a: os.path.join(settings.MEDIA_ROOT, *a)
+compressed_static_root = getattr(settings, 'COMPRESSED_STATIC_ROOT', settings.MEDIA_ROOT)
+path = lambda *a: os.path.join(compressed_static_root, *a)
 
 
 class Command(BaseCommand):  # pragma: no cover
