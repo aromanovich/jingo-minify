@@ -17,7 +17,8 @@ except ImportError:
 
 
 def path(*a):
-    return finders.find(posixpath.normpath(os.path.join(*a)))
+    return finders.find(posixpath.normpath(os.path.join(*a))) or \
+           os.path.join(settings.STATIC_ROOT, *a)
 
 def _build_html(items, wrapping):
     """
