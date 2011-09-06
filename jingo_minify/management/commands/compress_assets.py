@@ -10,11 +10,9 @@ from django.core.management.base import BaseCommand
 
 import git
 
-from django.contrib.staticfiles import finders
-import posixpath
 
-def path(*a):
-    return finders.find(posixpath.normpath(os.path.join(*a)))
+path = lambda *a: os.path.join(settings.STATIC_ROOT, *a)
+
 
 class Command(BaseCommand):  # pragma: no cover
     help = ("Compresses css and js assets defined in settings.MINIFY_BUNDLES")
