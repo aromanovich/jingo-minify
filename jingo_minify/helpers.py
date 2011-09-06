@@ -72,8 +72,8 @@ def css(bundle, media="screen,projection,tv", debug=settings.TEMPLATE_DEBUG):
             """<link rel="stylesheet" media="%s" href="%%s" />""" % media)
 
 def build_less(item):
-    path_css = path('%s.css' % item)
     path_less = path(item)
+    path_css = '%s.css' % path_less
 
     updated_less = os.path.getmtime(path(item))
     updated_css = 0  # If the file doesn't exist, force a refresh.
