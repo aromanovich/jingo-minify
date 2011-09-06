@@ -1,7 +1,9 @@
 import os
 import subprocess
+import posixpath
 
 from django.conf import settings
+from django.contrib.staticfiles import finders
 
 import jinja2
 from jingo import register, env
@@ -13,13 +15,15 @@ except ImportError:
     BUILD_ID_CSS = BUILD_ID_JS = BUILD_ID_IMG = 'dev'
     BUNDLE_HASHES = {}
 
-path = lambda *a: os.path.join(settings.MEDIA_ROOT, *a)
+
+def path(*a):
+    return finders.find(posixpath.normpath(os.path.join(*a)))
 
 def _build_html(items, wrapping):
     """
     Wrap `items` in wrapping.
     """
-    return jinja2.Markup("\n".join((wrapping % (settings.MEDIA_URL + item)
+    return jinja2.Markup("\n".join((wrapping % (settings.STATIC_URL + item)
                                    for item in items)))
 
 @register.function
