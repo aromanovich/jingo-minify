@@ -81,13 +81,28 @@ def build_less(item):
         updated_css = os.path.getmtime(path_css)
 
     # Is the uncompiled version newer?  Then recompile!
-    if updated_less > updated_css:
+    if True or updated_less > updated_css:
         with open(path_css, 'w') as output:
-            subprocess.Popen([settings.LESS_BIN, path_less],
+            less_dirs = []
+            for finder in finders.get_finders():
+                for rel_path, storage in finder.list(''):
+                    if rel_path.endswith('.less'):
+                        abs_path = storage.path(rel_path)
+                        # Compute relative path of less_dir due to lessc
+                        # peculiarity
+                        common_prefix = os.path.commonprefix([abs_path,
+                                                              path_less])
+                        base_dir = os.path.dirname(common_prefix)
+                        less_dir = os.path.relpath(os.path.dirname(abs_path),
+                                                   base_dir)
+                        if not less_dir in less_dirs:
+                            less_dirs.append(less_dir)
+            subprocess.Popen([settings.LESS_BIN,
+                              '--include-path=%s' % ':'.join(less_dirs),
+                              path_less],
                              stdout=output)
 
 def build_ids(request):
     """A context processor for injecting the css/js build ids."""
     return {'BUILD_ID_CSS': BUILD_ID_CSS, 'BUILD_ID_JS': BUILD_ID_JS,
             'BUILD_ID_IMG': BUILD_ID_IMG}
-
