@@ -81,7 +81,7 @@ def build_less(item):
         updated_css = os.path.getmtime(path_css)
 
     # Is the uncompiled version newer?  Then recompile!
-    if True or updated_less > updated_css:
+    if updated_less > updated_css:
         with open(path_css, 'w') as output:
             less_dirs = []
             for finder in finders.get_finders():
