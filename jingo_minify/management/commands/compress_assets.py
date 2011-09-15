@@ -39,7 +39,7 @@ class Command(BaseCommand):  # pragma: no cover
             f.write("\n")
             f.write('BUILD_ID_JS = "%s"' % gitid(path('js')))
             f.write("\n")
-            f.write('BUILD_ID_IMG = "%s"' % gitid(path('img'))
+            f.write('BUILD_ID_IMG = "%s"' % gitid(path('img')))
             f.write("\n")
             f.write('BUNDLE_HASHES = %s' % bundle_hashes)
             f.write("\n")
