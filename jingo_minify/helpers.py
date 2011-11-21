@@ -20,6 +20,7 @@ def path(*a):
     return finders.find(posixpath.normpath(os.path.join(*a))) or \
            os.path.join(settings.STATIC_ROOT, *a)
 
+
 def _build_html(items, wrapping):
     """
     Wrap `items` in wrapping.
@@ -34,7 +35,16 @@ def js(bundle, debug=settings.TEMPLATE_DEBUG):
     If we are not in debug mode, return a script that points at bundle-min.js.
     """
     if debug:
-        items = settings.MINIFY_BUNDLES['js'][bundle]
+        if getattr(settings, 'COFFEE_PREPROCESS', False):
+            items = []
+            for item in settings.MINIFY_BUNDLES['js'][bundle]:
+                if item.endswith('.coffee'):
+                    build_coffee(item)
+                    items.append('%s.js' % item)
+                else:
+                    items.append(item)
+        else:
+            items = settings.MINIFY_BUNDLES['js'][bundle]
     else:
         build_id = BUILD_ID_JS
         bundle_full = "js:%s" % bundle
@@ -52,14 +62,16 @@ def css(bundle, media="screen,projection,tv", debug=settings.TEMPLATE_DEBUG):
     If we are not in debug mode, return a script that points at bundle-min.css.
     """
     if debug:
-        items = []
-        for item in settings.MINIFY_BUNDLES['css'][bundle]:
-            if (item.endswith('.less') and
-                getattr(settings, 'LESS_PREPROCESS', False)):
-                build_less(item)
-                items.append('%s.css' % item)
-            else:
-                items.append(item)
+        if getattr(settings, 'LESS_PREPROCESS', False):
+            items = []
+            for item in settings.MINIFY_BUNDLES['css'][bundle]:
+                if item.endswith('.less'):
+                    build_less(item)
+                    items.append('%s.css' % item)
+                else:
+                    items.append(item)
+        else:
+            items = settings.MINIFY_BUNDLES['css'][bundle]
     else:
         build_id = BUILD_ID_CSS
         bundle_full = "css:%s" % bundle
@@ -70,6 +82,7 @@ def css(bundle, media="screen,projection,tv", debug=settings.TEMPLATE_DEBUG):
 
     return _build_html(items,
             """<link rel="stylesheet" media="%s" href="%%s" />""" % media)
+
 
 def build_less(item):
     path_less = path(item)
@@ -101,6 +114,26 @@ def build_less(item):
                               '--include-path=%s' % ':'.join(less_dirs),
                               path_less],
                              stdout=output)
+
+
+def build_coffee(item):
+    path_coffee = path(item)
+    path_js = '%s.js' % path_coffee
+
+    updated_coffee = os.path.getmtime(path_coffee)
+    updated_js = 0  # If the file doesn't exist, force a refresh.
+    if os.path.exists(path_js):
+        updated_js = os.path.getmtime(path_js)
+
+    # Is the uncompiled version newer?  Then recompile!
+    if updated_coffee > updated_js:
+        with open(path_js, 'w') as output:
+            subprocess.Popen([settings.COFFEE_BIN,
+                              '--print',
+                              path_coffee],
+                             stdout=output,
+                             stderr=output)
+
 
 def build_ids(request):
     """A context processor for injecting the css/js build ids."""
